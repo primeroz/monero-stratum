@@ -13,12 +13,14 @@ import (
 	"./go-pool/pool"
 	"./go-pool/stratum"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/goji/httpauth"
 	"github.com/gorilla/mux"
 	"github.com/yvasiyarov/gorelic"
 )
 
 var cfg pool.Config
+var RedisPool newPool()
 
 func startStratum() {
 	if cfg.Threads > 0 {
@@ -80,6 +82,16 @@ func readConfig(cfg *pool.Config) {
 	jsonParser := json.NewDecoder(configFile)
 	if err = jsonParser.Decode(&cfg); err != nil {
 		log.Fatal("Config error: ", err.Error())
+	}
+}
+
+func newPool() *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:   80,
+		MaxActive: 12000,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", ":6379")
+		},
 	}
 }
 

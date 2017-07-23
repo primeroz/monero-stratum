@@ -107,6 +107,12 @@ func (m *Miner) storeShare(diff int64) {
 	now := util.MakeTimestamp() / 1000
 	m.Lock()
 	m.shares[now] += diff
+
+	c := RedisPool.Get()
+	defer c.Close()
+	rMiner, err := c.Do("HINCRBY", "monero:shares:roundCurrent:"+m.ip+":"+m.id,diff)
+	rMiner, err := c.Do("HINCRBY", "monero:shares:roundCurrent:"+m.ip+":"+m.id,diff)
+
 	m.Unlock()
 }
 
